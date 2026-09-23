@@ -18,13 +18,17 @@
     "@supabase/supabase-js": "^2.47.10",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
-    "next": "15.1.3",
+    "next": "^15.5.26",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.5.5",
     "zustand": "^5.0.15"
+  },
+  "overrides": {
+    "browserslist": "^4.29.0",
+    "postcss": "^8.5.28"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

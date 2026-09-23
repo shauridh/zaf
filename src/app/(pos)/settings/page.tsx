@@ -11,6 +11,7 @@ import { PrinterPanel } from "@/components/pos/printer-panel";
 import { ReceiptPreview } from "@/components/settings/receipt-preview";
 import { TwofaPanel } from "@/components/settings/twofa-panel";
 import { StaffPanel } from "@/components/settings/staff-panel";
+import { ImportPanel } from "@/components/settings/import-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,7 @@ export default async function SettingsPage() {
             )}
           </section>
         }
+        data={<ImportPanel />}
       />
     </div>
   );

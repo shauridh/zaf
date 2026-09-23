@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
-export type SettingsTabKey = "gerai" | "struk" | "keamanan" | "fitur" | "staf";
+export type SettingsTabKey = "gerai" | "struk" | "keamanan" | "fitur" | "staf" | "data";
 
 const TABS: { key: SettingsTabKey; label: string; icon: string }[] = [
   { key: "gerai", label: "Gerai", icon: "🏪" },
@@ -11,6 +11,7 @@ const TABS: { key: SettingsTabKey; label: string; icon: string }[] = [
   { key: "keamanan", label: "Keamanan", icon: "🔐" },
   { key: "fitur", label: "Fitur & Modul", icon: "🧩" },
   { key: "staf", label: "Staf & PIN", icon: "👥" },
+  { key: "data", label: "Data & Impor", icon: "📦" },
 ];
 
 /**
@@ -23,12 +24,14 @@ export function SettingsTabs({
   keamanan,
   fitur,
   staf,
+  data,
 }: {
   gerai: React.ReactNode;
   struk: React.ReactNode;
   keamanan: React.ReactNode;
   fitur: React.ReactNode;
   staf: React.ReactNode;
+  data: React.ReactNode;
 }) {
   const [tab, setTab] = useState<SettingsTabKey>("gerai");
 
@@ -56,6 +59,7 @@ export function SettingsTabs({
       <div className={tab === "keamanan" ? "" : "hidden"}>{keamanan}</div>
       <div className={tab === "fitur" ? "" : "hidden"}>{fitur}</div>
       <div className={tab === "staf" ? "" : "hidden"}>{staf}</div>
+      <div className={tab === "data" ? "" : "hidden"}>{data}</div>
     </div>
   );
 }
