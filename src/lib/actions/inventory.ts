@@ -17,14 +17,15 @@ export interface IngredientView {
   cost_per_unit: number;
   supplier_id: string | null;
   barcode: string | null;
+  active: boolean;
 }
 
 export async function listIngredients(): Promise<IngredientView[]> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
     .from("ingredients")
-    .select("id, name, unit, purchase_unit, conversion_factor, stock_qty, min_stock_qty, cost_per_unit, supplier_id, barcode")
-    .eq("active", true)
+    .select("id, name, unit, purchase_unit, conversion_factor, stock_qty, min_stock_qty, cost_per_unit, supplier_id, barcode, active")
+    .order("active", { ascending: false })
     .order("name");
   return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
     id: r.id as string,
@@ -37,6 +38,7 @@ export async function listIngredients(): Promise<IngredientView[]> {
     cost_per_unit: Number(r.cost_per_unit),
     supplier_id: (r.supplier_id as string) ?? null,
     barcode: (r.barcode as string) ?? null,
+    active: r.active !== false,
   }));
 }
 
@@ -65,6 +67,25 @@ export async function upsertIngredient(input: {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Gagal simpan bahan" };
+  }
+}
+
+/**
+ * Disable/enable bahan baku (soft-disable — data & riwayat tetap utuh).
+ * Bahan nonaktif disembunyikan dari daftar aktif; resep tak ikut dihapus.
+ */
+export async function setIngredientActive(
+  id: string,
+  active: boolean,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin.from("ingredients").update({ active }).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal ubah status bahan" };
   }
 }
 

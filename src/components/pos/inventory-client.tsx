@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertTriangle, PackagePlus, Trash2, Calculator, Plus } from "lucide-react";
-import { adjustStock, recordPurchase, type IngredientView, type ReorderSuggestion, type PurchaseHistoryItem } from "@/lib/actions/inventory";
+import { AlertTriangle, PackagePlus, Trash2, Calculator, Plus, Power } from "lucide-react";
+import { adjustStock, recordPurchase, setIngredientActive, type IngredientView, type ReorderSuggestion, type PurchaseHistoryItem } from "@/lib/actions/inventory";
 import { createIngredient } from "@/lib/actions/ingredient-create";
 import { Numpad } from "@/components/ui/numpad";
 import { Modal } from "@/components/ui/modal";
@@ -29,6 +29,16 @@ export function InventoryClient({
 }) {
   const [mode, setMode] = useState<null | { kind: "adjustment" | "waste"; ingredient: IngredientView }>(null);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const [, startToggle] = useTransition();
+
+  const toggleActive = (ing: IngredientView) => {
+    startToggle(async () => {
+      const res = await setIngredientActive(ing.id, !ing.active);
+      if (res.ok) toast.success(`${ing.name} ${ing.active ? "dinonaktifkan" : "diaktifkan"}`);
+      else toast.error(res.error ?? "Gagal ubah status");
+      if (res.ok) window.location.reload();
+    });
+  };
   const [newOpen, setNewOpen] = useState(false);
 
   return (
@@ -86,8 +96,13 @@ export function InventoryClient({
           <tbody>
             {ingredients.map((ing) => (
               <tr key={ing.id} className="border-b border-stone-100 dark:border-stone-800">
-                <td className="p-3 font-semibold">
+                <td className={cn("p-3 font-semibold", !ing.active && "text-stone-400 line-through")}>
                   {ing.name}
+                  {!ing.active && (
+                    <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 align-middle text-[10px] font-bold text-stone-500 dark:bg-stone-700 dark:text-stone-300">
+                      NONAKTIF
+                    </span>
+                  )}
                   <span className="block text-xs font-normal text-stone-400">
                     {ing.unit}
                     {ing.purchase_unit && ing.purchase_unit !== ing.unit && (
@@ -123,6 +138,18 @@ export function InventoryClient({
                       className="touch-target rounded-lg border border-red-200 p-2 text-red-500 dark:border-red-500/30"
                     >
                       <Trash2 className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => toggleActive(ing)}
+                      title={ing.active ? "Nonaktifkan bahan" : "Aktifkan bahan"}
+                      className={cn(
+                        "touch-target rounded-lg border p-2",
+                        ing.active
+                          ? "border-stone-300 text-stone-500 dark:border-stone-700"
+                          : "border-emerald-300 text-emerald-600 dark:border-emerald-500/40",
+                      )}
+                    >
+                      <Power className="size-4" />
                     </button>
                   </div>
                 </td>
