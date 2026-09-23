@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1280, initial-scale=1" />
+<title>ChickenPOS — Opsi Mockup UI (Tablet Landscape)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700;800&family=Playfair+Display+SC:wght@700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ============ TOKENS ============ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ui: "Karla", ui-sans-serif, system-ui, sans-serif;
+    --display: "Playfair Display SC", Georgia, serif;
+    --round: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  body { font-family: var(--ui); overflow: hidden; background: #FEF2F2; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; transition: all .18s ease; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  .app { display: grid; grid-template-columns: 96px 1fr 380px; height: 100vh; }
+
+  /* ============ SIDEBAR (shared skeleton) ============ */
+  .sidebar { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 0; }
+  .logo { width: 52px; height: 52px; display: grid; place-items: center; margin-bottom: 14px; }
+  .nav-item { width: 72px; padding: 9px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 14px; font-size: 10.5px; font-weight: 700; }
+  .nav-item svg { width: 21px; height: 21px; }
+  .sidebar .spacer { flex: 1; }
+  .user-chip { width: 44px; height: 44px; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+
+  /* ============ CENTER ============ */
+  .center { display: flex; flex-direction: column; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 14px; padding: 16px 22px 10px; }
+  .search { display: flex; align-items: center; gap: 8px; width: 260px; padding: 11px 14px; font-size: 13.5px; font-weight: 600; }
+  .search svg { width: 17px; height: 17px; opacity: .55; }
+  .cats { display: flex; gap: 8px; flex: 1; }
+  .cat { padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 800; white-space: nowrap; }
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 8px 22px 18px; align-content: start; overflow: hidden; }
+  .card { border-radius: 18px; overflow: hidden; text-align: left; display: flex; flex-direction: column; }
+  .card .photo { aspect-ratio: 4/3; display: grid; place-items: center; }
+  .card .photo svg { width: 42%; height: 42%; }
+  .card .meta { padding: 9px 11px 11px; }
+  .card .name { font-family: var(--round); font-size: 13px; font-weight: 800; line-height: 1.2; }
+  .card .price { font-family: var(--round); font-size: 13.5px; font-weight: 800; margin-top: 3px; }
+  .card:hover { transform: scale(1.02); }
+
+  /* ============ CART ============ */
+  .cart { display: flex; flex-direction: column; padding: 18px 18px 16px; min-width: 0; }
+  .cart h2 { font-family: var(--round); font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cart h2 small { font-family: var(--ui); font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+  .line { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; margin-bottom: 8px; }
+  .line .thumb { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+  .line .thumb svg { width: 60%; height: 60%; }
+  .line .li-name { font-family: var(--round); font-size: 12.5px; font-weight: 800; line-height: 1.15; }
+  .line .li-opt { font-size: 10.5px; font-weight: 700; margin-top: 2px; }
+  .line .li-price { margin-left: auto; font-family: var(--round); font-size: 13px; font-weight: 800; }
+  .qty { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
+  .qty button { width: 24px; height: 24px; border-radius: 8px; font-weight: 900; font-size: 14px; line-height: 1; display: grid; place-items: center; }
+  .qty span { font-family: var(--round); font-weight: 800; font-size: 13px; min-width: 16px; text-align: center; }
+  .totals { margin-top: auto; padding-top: 10px; }
+  .trow { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700; padding: 3px 2px; }
+  .trow.big { font-family: var(--round); font-size: 19px; font-weight: 800; padding-top: 8px; margin-top: 6px; border-top: 2px dashed; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .actions .pay { grid-column: 1 / -1; padding: 16px; border-radius: 16px; font-family: var(--round); font-size: 16px; font-weight: 800; color: #fff; }
+  .actions .sec { padding: 12px; border-radius: 14px; font-family: var(--round); font-size: 12.5px; font-weight: 800; }
+
+  /* ============ SWITCHER ============ */
+  .switcher { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: rgba(15,17,21,.85); backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 50; }
+  .switcher button { padding: 8px 16px; border-radius: 999px; color: #cbd5e1; font-family: var(--round); font-size: 12px; font-weight: 800; }
+  .switcher button.on { background: #fff; color: #0f1115; }
+  .hint { position: fixed; bottom: 62px; left: 50%; transform: translateX(-50%); z-index: 50; padding: 7px 14px; border-radius: 999px; font-family: var(--round); font-size: 11.5px; font-weight: 800; color: #fff; background: rgba(15,17,21,.72); backdrop-filter: blur(8px); white-space: nowrap; }
+
+  /* =====================================================================
+     THEME A — VIBRANT BLOCK (appetizing red + warm gold, bold energetic)
+     ===================================================================== */
+  .theme-a { --bg: #FEF2F2; --card: #FFFFFF; --ink: #450A0A; --muted: #475569; --line: #FECACA;
+             --pri: #DC2626; --pri-2: #B91C1C; --acc: #A16207; --acc-2: #854D0E; }
+  .app.theme-a { background: var(--bg); color: var(--ink); }
+  .theme-a .sidebar { background: linear-gradient(180deg, var(--pri) 0%, var(--pri-2) 100%); }
+  .theme-a .logo { background: #fff; border-radius: 16px; box-shadow: 0 4px 0 rgba(0,0,0,.18); }
+  .theme-a .nav-item { color: #FECACA; }
+  .theme-a .nav-item:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .theme-a .nav-item.on { background: var(--acc); color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.18); }
+  .theme-a .user-chip { background: var(--acc); color: #fff; border-radius: 14px; }
+  .theme-a .search { background: #fff; border: 2px solid var(--line); border-radius: 14px; color: var(--muted); }
+  .theme-a .cat { background: #fff; border: 2px solid var(--line); color: var(--pri); }
+  .theme-a .cat:hover { border-color: var(--pri); }
+  .theme-a .cat.on { background: var(--pri); border-color: var(--pri); color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+  .theme-a .card { background: var(--card); border: 2px solid var(--line); box-shadow: 0 3px 0 #FECACA; }
+  .theme-a .card:hover { border-color: var(--pri); box-shadow: 0 5px 0 var(--pri); }
+  .theme-a .card .name { color: var(--ink); }
+  .theme-a .card .price { color: #fff; background: var(--acc); border-radius: 8px; padding: 2px 8px; align-self: flex-start; }
+  .theme-a .cart { background: var(--card); border-left: 2px solid var(--line); }
+  .theme-a .cart h2 small { background: var(--line); color: var(--pri-2); }
+  .theme-a .line { background: var(--bg); border: 2px solid var(--line); }
+  .theme-a .line .thumb { background: linear-gradient(135deg,#FDE68A,#FCA5A5); }
+  .theme-a .li-opt { color: var(--muted); }
+  .theme-a .qty button { background: #fff; border: 2px solid var(--line); color: var(--pri); }
+  .theme-a .qty button:hover { border-color: var(--pri); background: var(--line); }
+  .theme-a .trow { color: var(--muted); }
+  .theme-a .trow.big { color: var(--ink); border-color: var(--line); }
+  .theme-a .actions .pay { background: var(--acc); box-shadow: 0 4px 0 var(--acc-2); }
+  .theme-a .actions .pay:hover { background: var(--acc-2); }
+  .theme-a .actions .sec { background: var(--bg); border: 2px solid var(--line); color: var(--pri); }
+  .theme-a .photo-a1 { background: linear-gradient(135deg,#FDE68A 0%,#FCA5A5 100%); }
+  .theme-a .photo-a2 { background: linear-gradient(135deg,#FDBA74 0%,#F87171 100%); }
+  .theme-a .photo-a3 { background: linear-gradient(135deg,#FEF3C7 0%,#FCD34D 100%); }
+  .theme-a .photo-a4 { background: linear-gradient(135deg,#FECACA 0%,#FB923C 100%); }
+
+  /* =====================================================================
+     THEME B — FRESH BENTO (neutral base + brand accent, airy, modern)
+     ===================================================================== */
+  .theme-b { --bg: #F5F5F7; --card: #FFFFFF; --ink: #17171C; --muted: #6E7079; --line: #E8E8ED;
+             --acc: #F59E0B; --acc-ink: #7C2D12; }
+  .app.theme-b { background: var(--bg); color: var(--ink); }
+  .theme-b .sidebar { background: transparent; }
+  .theme-b .logo { background: var(--ink); border-radius: 18px; }
+  .theme-b .nav-item { color: var(--muted); border-radius: 18px; }
+  .theme-b .nav-item:hover { background: #fff; color: var(--ink); box-shadow: 0 4px 6px rgba(0,0,0,.05); }
+  .theme-b .nav-item.on { background: var(--ink); color: #fff; }
+  .theme-b .user-chip { background: #fff; color: var(--ink); border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,.06); }
+  .theme-b .search { background: #fff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,.05); color: var(--muted); }
+  .theme-b .cat { background: #fff; color: var(--muted); box-shadow: 0 2px 4px rgba(0,0,0,.04); }
+  .theme-b .cat.on { background: var(--ink); color: #fff; }
+  .theme-b .card { background: var(--card); border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,.05); }
+  .theme-b .card:hover { box-shadow: 0 12px 24px rgba(0,0,0,.10); }
+  .theme-b .card .price { color: var(--acc-ink); background: #FEF3C7; border-radius: 999px; padding: 2px 10px; align-self: flex-start; }
+  .theme-b .cart { background: var(--card); border-radius: 28px 0 0 28px; box-shadow: -8px 0 24px rgba(0,0,0,.05); }
+  .theme-b .cart h2 small { background: var(--bg); color: var(--muted); }
+  .theme-b .line { background: var(--bg); border-radius: 18px; }
+  .theme-b .line .thumb { background: linear-gradient(135deg,#E8E8ED,#F5F5F7); border-radius: 12px; }
+  .theme-b .li-opt { color: var(--muted); }
+  .theme-b .qty button { background: #fff; color: var(--ink); box-shadow: 0 2px 4px rgba(0,0,0,.08); border-radius: 50%; }
+  .theme-b .trow { color: var(--muted); }
+  .theme-b .trow.big { color: var(--ink); border-color: var(--line); }
+  .theme-b .actions .pay { background: var(--acc); box-shadow: 0 6px 16px rgba(245,158,11,.4); }
+  .theme-b .actions .pay:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(245,158,11,.5); }
+  .theme-b .actions .sec { background: var(--bg); color: var(--ink); border-radius: 16px; }
+  .theme-b .photo-b1 { background: linear-gradient(135deg,#FFF7ED 0%,#FED7AA 100%); }
+  .theme-b .photo-b2 { background: linear-gradient(135deg,#F5F5F7 0%,#E7E5E4 100%); }
+  .theme-b .photo-b3 { background: linear-gradient(135deg,#FFFBEB 0%,#FDE68A 100%); }
+  .theme-b .photo-b4 { background: linear-gradient(135deg,#FEF2F2 0%,#FECACA 100%); }
+
+  /* =====================================================================
+     THEME C — CLAY SOFT (claymorphism: soft 3D, pastel, playful chunky)
+     ===================================================================== */
+  .theme-c { --bg: #FFF7F2; --card: #FFFFFF; --ink: #4A3B47; --muted: #9A8A96; --edge: #FFE3D3;
+             --peach: #FDBCB4; --mint: #B8E6C9; --lilac: #E6D9F2; --sun: #FFD97D; }
+  .app.theme-c {
+    color: var(--ink);
+    background: radial-gradient(1200px 700px at 15% -10%, #FFE9DC 0%, var(--bg) 55%);
+  }
+  .theme-c .sidebar { background: var(--card); box-shadow: inset -2px -2px 8px rgba(0,0,0,.04), 4px 4px 12px rgba(0,0,0,.06); border-right: 3px solid var(--edge); }
+  .theme-c .logo { background: linear-gradient(135deg, var(--peach), var(--sun)); border-radius: 20px; box-shadow: inset -2px -2px 6px rgba(0,0,0,.06), 3px 3px 8px rgba(0,0,0,.10); }
+  .theme-c .nav-item { color: var(--muted); }
+  .theme-c .nav-item:hover { background: var(--edge); color: var(--ink); }
+  .theme-c .nav-item.on { background: var(--peach); color: var(--ink); box-shadow: inset -2px -2px 6px rgba(0,0,0,.06), 2px 2px 6px rgba(0,0,0,.10); }
+  .theme-c .user-chip { background: var(--lilac); color: var(--ink); border-radius: 16px; box-shadow: inset -2px -2px 6px rgba(0,0,0,.05), 2px 2px 6px rgba(0,0,0,.08); }
+  .theme-c .search { background: var(--card); border: 3px solid var(--edge); border-radius: 18px; color: var(--muted); box-shadow: inset 2px 2px 6px rgba(0,0,0,.04); }
+  .theme-c .cat { background: var(--card); border: 3px solid var(--edge); border-radius: 16px; color: var(--muted); box-shadow: 2px 2px 6px rgba(0,0,0,.06); }
+  .theme-c .cat.on { background: var(--sun); color: var(--ink); border-color: #F5C157; }
+  .theme-c .card { background: var(--card); border: 3px solid var(--edge); border-radius: 22px; box-shadow: inset -2px -2px 8px rgba(0,0,0,.04), 4px 4px 10px rgba(0,0,0,.07); }
+  .theme-c .card:hover { transform: scale(1.02) translateY(-2px); box-shadow: inset -2px -2px 8px rgba(0,0,0,.04), 6px 8px 16px rgba(0,0,0,.10); }
+  .theme-c .card .price { color: var(--ink); background: var(--mint); border-radius: 12px; padding: 3px 10px; align-self: flex-start; box-shadow: inset -1px -1px 4px rgba(0,0,0,.05); }
+  .theme-c .cart { background: var(--card); border-left: 3px solid var(--edge); }
+  .theme-c .cart h2 small { background: var(--lilac); color: var(--ink); }
+  .theme-c .line { background: var(--bg); border: 3px solid var(--edge); box-shadow: inset -2px -2px 6px rgba(0,0,0,.03); }
+  .theme-c .line .thumb { background: linear-gradient(135deg, var(--sun), var(--peach)); border-radius: 14px; }
+  .theme-c .li-opt { color: var(--muted); }
+  .theme-c .qty button { background: var(--card); border: 2px solid var(--edge); color: var(--ink); border-radius: 10px; box-shadow: 1px 2px 4px rgba(0,0,0,.08); }
+  .theme-c .qty button:hover { background: var(--sun); }
+  .theme-c .trow { color: var(--muted); }
+  .theme-c .trow.big { color: var(--ink); border-color: var(--edge); }
+  .theme-c .actions .pay { background: linear-gradient(135deg, var(--peach), #F8A597); color: var(--ink); box-shadow: inset -2px -2px 8px rgba(0,0,0,.05), 3px 4px 10px rgba(0,0,0,.12); }
+  .theme-c .actions .pay:hover { transform: translateY(-1px); }
+  .theme-c .actions .sec { background: var(--bg); border: 3px solid var(--edge); color: var(--ink); border-radius: 16px; }
+  .theme-c .photo-c1 { background: linear-gradient(135deg, #FFE9DC, var(--peach)); }
+  .theme-c .photo-c2 { background: linear-gradient(135deg, #EAF7EF, var(--mint)); }
+  .theme-c .photo-c3 { background: linear-gradient(135deg, #FFF6D9, var(--sun)); }
+  .theme-c .photo-c4 { background: linear-gradient(135deg, #F3EBFA, var(--lilac)); }
+</style>
+</head>
+<body>
+  <div class="app theme-a" id="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo" title="ChickenPOS">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px">
+          <path d="M15.5 3.5a5 5 0 0 1 4.5 6.9L9 21.5a2.1 2.1 0 0 1-3-3L16.6 7.5A5 5 0 0 1 15.5 3.5z"/>
+          <path d="M7.5 16.5l-3 3a1.8 1.8 0 0 1-2.5-2.5l3-3"/>
+        </svg>
+      </div>
+      <button class="nav-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Kasir</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>Pesanan</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5H20z"/></svg>Katalog</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Persediaan</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Laporan</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="13" rx="3"/><path d="M16 12.5h3"/></svg>Keuangan</button>
+      <div class="spacer"></div>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.2-1.6l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.7-1.6L13.4 2h-2.8l-.4 2.9a7 7 0 0 0-2.7 1.6l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .5.1 1.1.2 1.6l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.7 1.6l.4 2.9h2.8l.4-2.9a7 7 0 0 0 2.7-1.6l2.3 1 2-3.4-2-1.5c.1-.5.2-1 .2-1.6z"/></svg>Atur</button>
+      <div class="user-chip">OW</div>
+    </aside>
+
+    <!-- CENTER: SEARCH + CATEGORIES + PRODUCT GRID -->
+    <main class="center">
+      <div class="topbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          Cari menu…
+        </div>
+        <div class="cats">
+          <button class="cat on">Semua</button>
+          <button class="cat">Ayam Goreng</button>
+          <button class="cat">Paket</button>
+          <button class="cat">Minuman</button>
+          <button class="cat">Snack</button>
+        </div>
+      </div>
+      <section class="grid">
+        <button class="card"><div class="photo photo-a1 photo-b1 photo-c1"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M15.5 3.5a5 5 0 0 1 4.5 6.9L9 21.5a2.1 2.1 0 0 1-3-3L16.6 7.5A5 5 0 0 1 15.5 3.5z"/><path d="M7.5 16.5l-3 3a1.8 1.8 0 0 1-2.5-2.5l3-3"/></svg></div><div class="meta"><div class="name">Ayam Krispi</div><div class="price">Rp 20.000</div></div></button>
+        <button class="card"><div class="photo photo-a2 photo-b2 photo-c2"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M4 9h16l-1.5 11a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg></div><div class="meta"><div class="name">Paket Ayam 1</div><div class="price">Rp 32.000</div></div></button>
+        <button class="card"><div class="photo photo-a3 photo-b3 photo-c3"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 1.8H9A2 2 0 0 1 7 20z"/><path d="M8 8l1-4h6l1 4"/><path d="M12 2v2"/></svg></div><div class="meta"><div class="name">Teh Manis</div><div class="price">Rp 8.000</div></div></button>
+        <button class="card"><div class="photo photo-a4 photo-b4 photo-c4"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/></svg></div><div class="meta"><div class="name">Kentang Goreng</div><div class="price">Rp 15.000</div></div></button>
+        <button class="card"><div class="photo photo-a1 photo-b1 photo-c1"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M15.5 3.5a5 5 0 0 1 4.5 6.9L9 21.5a2.1 2.1 0 0 1-3-3L16.6 7.5A5 5 0 0 1 15.5 3.5z"/><path d="M7.5 16.5l-3 3a1.8 1.8 0 0 1-2.5-2.5l3-3"/></svg></div><div class="meta"><div class="name">Ayam Spesial</div><div class="price">Rp 25.000</div></div></button>
+        <button class="card"><div class="photo photo-a2 photo-b2 photo-c2"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M4 9h16l-1.5 11a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg></div><div class="meta"><div class="name">Paket Ayam 2</div><div class="price">Rp 45.000</div></div></button>
+        <button class="card"><div class="photo photo-a3 photo-b3 photo-c3"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 1.8H9A2 2 0 0 1 7 20z"/><path d="M8 8l1-4h6l1 4"/><path d="M12 2v2"/></svg></div><div class="meta"><div class="name">Es Jeruk</div><div class="price">Rp 10.000</div></div></button>
+        <button class="card"><div class="photo photo-a4 photo-b4 photo-c4"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/></svg></div><div class="meta"><div class="name">Sosis Bakar</div><div class="price">Rp 12.000</div></div></button>
+      </section>
+    </main>
+
+    <!-- CART -->
+    <aside class="cart">
+      <h2>Pesanan Baru <small>Bawa Pulang</small></h2>
+
+      <div class="line">
+        <div class="thumb photo-a1 photo-b1 photo-c1"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="2" stroke-linecap="round"><path d="M4 9h16l-1.5 11a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg></div>
+        <div>
+          <div class="li-name">Paket Ayam 1</div>
+          <div class="li-opt">Jumbo · Extra Saus</div>
+          <div class="qty"><button>−</button><span>2</span><button>+</button></div>
+        </div>
+        <div class="li-price">Rp 64.000</div>
+      </div>
+
+      <div class="line">
+        <div class="thumb photo-a3 photo-b3 photo-c3"><svg viewBox="0 0 24 24" fill="none" stroke="#8a4b2a" stroke-width="2" stroke-linecap="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 1.8H9A2 2 0 0 1 7 20z"/><path d="M8 8l1-4h6l1 4"/></svg></div>
+        <div>
+          <div class="li-name">Teh Manis</div>
+          <div class="qty"><button>−</button><span>1</span><button>+</button></div>
+        </div>
+        <div class="li-price">Rp 8.000</div>
+      </div>
+
+      <div class="totals">
+        <div class="trow"><span>Subtotal</span><span>Rp 72.000</span></div>
+        <div class="trow"><span>Diskon promo</span><span>− Rp 10.000</span></div>
+        <div class="trow big"><span>Total</span><span>Rp 62.000</span></div>
+        <div class="actions">
+          <button class="sec">Tahan</button>
+          <button class="sec">Diskon</button>
+          <button class="pay">Bayar · Rp 62.000</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="hint" id="hint">OPSI A — Vibrant Block · appetizing red + warm gold</div>
+  <nav class="switcher">
+    <button class="on" data-t="a">A · Vibrant</button>
+    <button data-t="b">B · Bento</button>
+    <button data-t="c">C · Clay</button>
+    <button data-t="d">D · Layout V2 →</button>
+  </nav>
+
+<script>
+  const hints = {
+    a: "OPSI A — Vibrant Block · appetizing red + warm gold, blok tebal berani (energik, cocok brand fried chicken)",
+    b: "OPSI B — Fresh Bento · netral + aksen amber, kartu rounded 24px, bayangan lembut (modern, lapang, bersih)",
+    c: "OPSI C — Clay Soft · pastel claymorphism, elemen 3D lembut, sudut gemuk (playful, hangat, ramah sentuh)",
+  };
+  document.querySelectorAll(".switcher button").forEach((b) => {
+    b.addEventListener("click", () => {
+      const t = b.dataset.t;
+      if (t === "d") { location.href = "layout-v2.html"; return; }
+      document.querySelectorAll(".switcher button").forEach((x) => x.classList.remove("on"));
+      b.classList.add("on");
+      document.getElementById("app").className = "app theme-" + t;
+      document.getElementById("hint").textContent = hints[t];
+    });
+  });
+</script>
+</body>
+</html>

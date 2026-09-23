@@ -1,0 +1,19 @@
+node_modules
+.next
+out
+build
+dist
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.local
+.env.production
+.vercel
+supabase/functions
+coverage
+playwright-report
+test-results
+.freebuff
+# Artefak build Serwist (regenerasi tiap next build)
+public/sw.js
+public/sw.js.map
