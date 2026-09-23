@@ -85,7 +85,7 @@ export function FinanceClient({ from, to, expenses, settlements, profit }: Props
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+                <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
                   <th className="pb-2">Kanal</th>
                   <th className="pb-2">Periode</th>
                   <th className="pb-2">Gross</th>
@@ -122,7 +122,7 @@ export function FinanceClient({ from, to, expenses, settlements, profit }: Props
 function Card({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
     <div className={cn("card p-4", highlight !== undefined && (highlight ? "border-green-400" : "border-red-300"))}>
-      <p className="text-[11px] uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-stone-600 dark:text-stone-400">{label}</p>
       <p className={cn("text-xl font-bold tabular-nums", highlight !== undefined && (highlight ? "text-green-600" : "text-red-500"))}>
         {formatRupiah(value)}
       </p>

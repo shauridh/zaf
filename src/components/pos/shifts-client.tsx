@@ -163,7 +163,7 @@ export function ShiftsClient({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+                <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
                   <th className="py-2">Ditutup</th>
                   <th className="py-2">Modal</th>
                   <th className="py-2">Expected</th>
@@ -226,7 +226,7 @@ function Stat({ label, value, highlight, plain }: { label: string; value: number
       "rounded-xl p-3",
       highlight ? "bg-brand-50 dark:bg-brand-500/10" : "bg-stone-100 dark:bg-stone-800",
     )}>
-      <p className="text-[11px] uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-stone-600 dark:text-stone-400">{label}</p>
       <p className={cn("text-lg font-bold tabular-nums", plain && "text-base", highlight && "text-brand-700 dark:text-brand-300")}>
         {plain ? value : formatRupiah(value)}
       </p>

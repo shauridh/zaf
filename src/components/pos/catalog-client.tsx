@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { ChefHat, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { ChefHat, Pencil, Plus, SlidersHorizontal, Tags, Trash2 } from "lucide-react";
 import {
+  createCategory,
+  deleteCategory,
   listIngredientsForRecipe,
   removeProductImage,
   setProductActive,
+  updateCategory,
   uploadProductImage,
   upsertProduct,
   type ProductWithCost,
@@ -40,10 +43,17 @@ export function CatalogClient({
   const [prodModal, setProdModal] = useState<null | "new" | ProductWithCost>(null);
   const [recipeFor, setRecipeFor] = useState<ProductWithCost | null>(null);
   const [optionsFor, setOptionsFor] = useState<ProductWithCost | null>(null);
+  const [catsOpen, setCatsOpen] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setCatsOpen(true)}
+          className="touch-target flex items-center gap-2 rounded-btn border border-brand-600 px-4 py-2 text-sm font-bold text-brand-700 dark:text-brand-300"
+        >
+          <Tags className="size-4" /> Kategori
+        </button>
         <button
           onClick={() => setProdModal("new")}
           className="touch-target flex items-center gap-2 rounded-btn bg-brand-600 px-4 py-2 text-sm font-bold text-white"
@@ -55,7 +65,7 @@ export function CatalogClient({
       <section className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+            <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
               <th className="p-3">Produk</th>
               <th className="p-3">Kategori</th>
               <th className="p-3">Harga</th>
@@ -162,6 +172,14 @@ export function CatalogClient({
         )}
       </Modal>
 
+      <Modal open={catsOpen} onClose={() => setCatsOpen(false)} title="Kategori Produk" size="lg">
+        <CategoriesEditor
+          categories={categories}
+          products={products.map((p) => ({ category_id: p.category_id }))}
+          onDone={() => setCatsOpen(false)}
+        />
+      </Modal>
+
       <Modal
         open={!!recipeFor}
         onClose={() => setRecipeFor(null)}
@@ -247,6 +265,10 @@ function ProductForm({
       toast.error("Nama & harga wajib");
       return;
     }
+    if (!categoryId) {
+      toast.error("Kategori belum tersedia — buat dulu via tombol Kategori");
+      return;
+    }
     startTransition(async () => {
       const res = await upsertProduct({
         id: product?.id,
@@ -285,6 +307,7 @@ function ProductForm({
         onChange={(e) => setCategoryId(e.target.value)}
         className="w-full rounded-btn border border-stone-300 px-4 py-3 dark:border-stone-700 dark:bg-stone-800"
       >
+        {categories.length === 0 && <option value="">— Belum ada kategori —</option>}
         {categories.map((c) => (
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
@@ -669,6 +692,125 @@ function OptionsEditor({ productId, productName }: { productId: string; productN
       </div>
 
       <button onClick={reload} className="w-full py-2 text-sm font-semibold text-stone-500 hover:underline">
+        Selesai
+      </button>
+    </div>
+  );
+}
+
+function CategoriesEditor({
+  categories,
+  products,
+  onDone,
+}: {
+  categories: { id: string; name: string }[];
+  products: { category_id: string }[];
+  onDone: () => void;
+}) {
+  const [newName, setNewName] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [busy, startTransition] = useTransition();
+
+  const countFor = (id: string) => products.filter((p) => p.category_id === id).length;
+
+  const reload = () => window.location.reload();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Nama kategori baru (mis. Paket Hemat)"
+          className="w-full rounded-btn border border-stone-300 px-4 py-3 font-semibold dark:border-stone-700 dark:bg-stone-800"
+        />
+        <button
+          onClick={() =>
+            startTransition(async () => {
+              const res = await createCategory(newName);
+              if (res.ok) {
+                setNewName("");
+                reload();
+              } else toast.error(res.error ?? "Gagal");
+            })
+          }
+          disabled={busy || !newName.trim()}
+          className="shrink-0 rounded-btn bg-brand-600 px-5 font-bold text-white disabled:opacity-40"
+        >
+          Tambah
+        </button>
+      </div>
+
+      <ul className="divide-y divide-stone-100 dark:divide-stone-800">
+        {categories.map((c) => (
+          <li key={c.id} className="flex items-center gap-2 py-2.5">
+            {editId === c.id ? (
+              <>
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full rounded-btn border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800"
+                />
+                <button
+                  onClick={() =>
+                    startTransition(async () => {
+                      const res = await updateCategory(c.id, editName);
+                      if (res.ok) reload();
+                      else toast.error(res.error ?? "Gagal");
+                    })
+                  }
+                  className="shrink-0 rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white"
+                >
+                  Simpan
+                </button>
+                <button
+                  onClick={() => setEditId(null)}
+                  className="shrink-0 rounded-lg border border-stone-300 px-3 py-2 text-xs font-semibold dark:border-stone-700"
+                >
+                  Batal
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="w-full text-sm font-semibold">{c.name}</span>
+                <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-500 dark:bg-stone-800">
+                  {countFor(c.id)} produk
+                </span>
+                <button
+                  onClick={() => {
+                    setEditId(c.id);
+                    setEditName(c.name);
+                  }}
+                  title="Edit kategori"
+                  className="touch-target shrink-0 rounded-lg border border-stone-300 p-2 dark:border-stone-700"
+                >
+                  <Pencil className="size-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (!window.confirm(`Hapus kategori "${c.name}"?`)) return;
+                    startTransition(async () => {
+                      const res = await deleteCategory(c.id);
+                      if (res.ok) reload();
+                      else toast.error(res.error ?? "Gagal");
+                    });
+                  }}
+                  title="Hapus kategori"
+                  className="touch-target shrink-0 rounded-lg border border-red-200 p-2 text-red-500 dark:border-red-500/30"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </>
+            )}
+          </li>
+        ))}
+        {categories.length === 0 && (
+          <li className="py-4 text-center text-sm text-stone-400">Belum ada kategori</li>
+        )}
+      </ul>
+
+      <button onClick={onDone} className="w-full py-2 text-sm font-semibold text-stone-500 hover:underline">
         Selesai
       </button>
     </div>

@@ -71,6 +71,80 @@ export async function upsertIngredient(input: {
 }
 
 /**
+ * Edit bahan baku (identitas & konversi — bukan stok/HPP, itu lewat opname/pembelian).
+ */
+export async function updateIngredient(input: {
+  id: string;
+  name: string;
+  unit: string;
+  purchase_unit: string;
+  conversion_factor: number;
+  min_stock_qty: number;
+  supplier_id?: string | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const name = input.name.trim();
+    if (!name) return { ok: false, error: "Nama bahan wajib diisi" };
+    if (!input.unit.trim()) return { ok: false, error: "Satuan resep wajib dipilih" };
+    if (!input.purchase_unit.trim()) return { ok: false, error: "Satuan beli wajib dipilih" };
+    if (!Number.isFinite(input.conversion_factor) || input.conversion_factor <= 0) {
+      return { ok: false, error: "Isi konversi harus lebih dari 0" };
+    }
+    const { error: dupErr, data: dup } = await admin
+      .from("ingredients")
+      .select("id")
+      .ilike("name", name)
+      .neq("id", input.id)
+      .limit(1);
+    if (dupErr) throw new Error(dupErr.message);
+    if (dup && dup.length > 0) return { ok: false, error: `Bahan "${name}" sudah ada` };
+
+    const { error } = await admin
+      .from("ingredients")
+      .update({
+        name,
+        unit: input.unit.trim(),
+        purchase_unit: input.purchase_unit.trim(),
+        conversion_factor: input.conversion_factor,
+        min_stock_qty: input.min_stock_qty,
+        supplier_id: input.supplier_id || null,
+      })
+      .eq("id", input.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal edit bahan" };
+  }
+}
+
+/**
+ * Hapus bahan baku permanen.
+ * Bila masih dipakai (resep/pembelian/mutasi stok), tolak dengan pesan ramah —
+ * sarankan nonaktifkan saja agar riwayat tetap utuh.
+ */
+export async function deleteIngredient(id: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin.from("ingredients").delete().eq("id", id);
+    if (error) {
+      if (error.code === "23503") {
+        return {
+          ok: false,
+          error: "Bahan masih dipakai (resep/pembelian/mutasi stok) — nonaktifkan saja agar riwayat tetap utuh",
+        };
+      }
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal hapus bahan" };
+  }
+}
+
+/**
  * Disable/enable bahan baku (soft-disable — data & riwayat tetap utuh).
  * Bahan nonaktif disembunyikan dari daftar aktif; resep tak ikut dihapus.
  */
@@ -454,23 +528,29 @@ export async function reorderSuggestions(): Promise<ReorderSuggestion[]> {
     const daily = used14 / 14;
     const lead = leadBySupplier.get(ing.supplier_id as string) ?? 2;
     const need = daily * (lead + 2) - stock;
-    const lowStock = stock <= minStock;
+    const lowStock = minStock > 0 && stock <= minStock;
 
-    if (need > 0 || lowStock) {
-      result.push({
-        ingredient_id: ing.id as string,
-        name: ing.name as string,
-        unit: ing.unit as string,
-        stock_qty: stock,
-        min_stock_qty: minStock,
-        avg_daily_usage: Math.round(daily * 100) / 100,
-        lead_time_days: lead,
-        suggested_qty: Math.max(Math.ceil(need), minStock > 0 ? minStock : 0),
-        reason: lowStock
-          ? "Stok di bawah minimum"
-          : `Pemakaian ±${Math.round(daily * 100) / 100} ${ing.unit}/hari × lead time ${lead} hari`,
-      });
-    }
+    // Abaikan bahan tanpa sinyal: minimum stok 0 + tidak ada pemakaian tercatat.
+    if (minStock <= 0 && daily === 0) continue;
+    // Tanpa kebutuhan nyata → bukan saran reorder.
+    if (need <= 0 && !lowStock) continue;
+
+    const suggested = Math.max(Math.ceil(need), minStock > 0 ? minStock - stock : 0);
+    if (suggested <= 0) continue;
+
+    result.push({
+      ingredient_id: ing.id as string,
+      name: ing.name as string,
+      unit: ing.unit as string,
+      stock_qty: stock,
+      min_stock_qty: minStock,
+      avg_daily_usage: Math.round(daily * 100) / 100,
+      lead_time_days: lead,
+      suggested_qty: suggested,
+      reason: lowStock
+        ? "Stok di bawah minimum"
+        : `Pemakaian ±${Math.round(daily * 100) / 100} ${ing.unit}/hari × lead time ${lead} hari`,
+    });
   }
   return result.sort((a, b) => a.stock_qty - b.stock_qty);
 }

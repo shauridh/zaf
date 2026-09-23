@@ -53,11 +53,11 @@ export function ReportsClient(props: Props) {
       <div className="card flex flex-wrap items-end gap-3 p-4">
         <div>
           <label className="block text-xs font-medium text-stone-500">Dari</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-btn border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800" />
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-11 rounded-btn border border-stone-300 px-3 text-sm dark:border-stone-700 dark:bg-stone-800" />
         </div>
         <div>
           <label className="block text-xs font-medium text-stone-500">Sampai</label>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-btn border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800" />
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-11 rounded-btn border border-stone-300 px-3 text-sm dark:border-stone-700 dark:bg-stone-800" />
         </div>
         <button onClick={apply} className="touch-target rounded-btn bg-brand-600 px-5 py-2 text-sm font-bold text-white">
           Tampilkan
@@ -88,7 +88,7 @@ export function ReportsClient(props: Props) {
                 style={{ height: `${Math.max((h.total / maxHour) * 100, h.total > 0 ? 6 : 2)}%` }}
                 title={`${h.hour}:00 — ${formatRupiah(h.total)} (${h.orders} order)`}
               />
-              {h.hour % 3 === 0 && <span className="text-[9px] text-stone-400">{h.hour}</span>}
+              {h.hour % 3 === 0 && <span className="text-xs text-stone-500">{h.hour}</span>}
             </div>
           ))}
         </div>
@@ -144,7 +144,7 @@ export function ReportsClient(props: Props) {
                           <div className="h-1 w-full rounded bg-stone-200 dark:bg-stone-700" />
                         )}
                       </div>
-                      <span className="whitespace-nowrap text-[10px] text-stone-500">{s.label}</span>
+                      <span className="whitespace-nowrap text-xs text-stone-600 dark:text-stone-300">{s.label}</span>
                     </div>
                   );
                 })}
@@ -258,7 +258,7 @@ export function ReportsClient(props: Props) {
 function Stat({ label, value, highlight, plain }: { label: string; value: number; highlight?: boolean; plain?: boolean }) {
   return (
     <div className={cn("card p-4", highlight && "border-brand-400 bg-brand-50 dark:bg-brand-500/10")}>
-      <p className="text-[11px] uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-stone-600 dark:text-stone-400">{label}</p>
       <p className="text-xl font-bold tabular-nums">{plain ? value : formatRupiah(value)}</p>
     </div>
   );
@@ -279,7 +279,7 @@ function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+          <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
             {head.map((h) => (
               <th key={h} className="pb-2">{h}</th>
             ))}

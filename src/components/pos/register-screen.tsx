@@ -643,7 +643,7 @@ function OrderMetaModal({ open, onClose }: { open: boolean; onClose: () => void 
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] text-stone-400">
+          <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
             Order marketplace masuk dari sini — fee dicatat di Keuangan via halaman Kanal Online.
           </p>
         </div>

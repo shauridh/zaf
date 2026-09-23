@@ -120,3 +120,40 @@ const ITEMS = [
   }
   console.log(JSON.stringify({ total: ITEMS.length, inserted, skipped, errors }, null, 2));
 })();
+
+/**
+ * Set minimum stok masuk akal untuk bahan Sabana yang masih 0.
+ * Heuristik per kategori (dalam satuan jual):
+ *   bahan segar (ayam/kentang/roti/bakso) ≈ 1 hari operasional,
+ *   kemasan/disposables ≈ 1 pack konversi, saus/refill ≈ 500 gr, minuman kemasan ≈ 12 pcs.
+ */
+const MIN_STOCK = [
+  ["Ayam Potong", 9], ["Ayam Boneless", 15], ["Kulit Ayam", 500], ["Chicken Patty", 10],
+  ["Chicken Katsu", 10], ["Chicken Roll", 5], ["Bakso", 10], ["Roti Burger", 10],
+  ["Roti Chicken Bun", 4], ["Kentang", 1000], ["Beras", 3000], ["SuncO", 2000],
+  ["Tepung", 1], ["Sambal", 250], ["Saus", 50], ["Saud", 250], ["Mayonaise", 450],
+  ["Oregano", 25], ["Kemasan", 50], ["Kertas", 50], ["Box", 50], ["Lunch", 50],
+  ["Paper", 25], ["Plastik", 25], ["Sarung", 40], ["Sendok", 50], ["Cup Sauce", 25],
+  ["Fruit Tea", 12], ["Teh Botol", 12], ["Air Botol", 12], ["Air Kesehatan", 24],
+  ["Concentrate", 1], ["Kardus", 5], ["Rice Box", 50],
+];
+
+async function setMinStock() {
+  let updated = 0;
+  for (const [prefix, min] of MIN_STOCK) {
+    const { data, error } = await admin
+      .from("ingredients")
+      .select("id, name")
+      .ilike("name", `${prefix}%`)
+      .eq("min_stock_qty", 0);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      const { error: upErr } = await admin.from("ingredients").update({ min_stock_qty: min }).eq("id", row.id);
+      if (upErr) throw upErr;
+      updated++;
+    }
+  }
+  console.log(`min_stock di-set untuk ${updated} bahan`);
+}
+
+if (process.argv.includes("--min-stock")) setMinStock();

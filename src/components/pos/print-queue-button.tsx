@@ -42,11 +42,11 @@ export function PrintQueueButton() {
       <button
         onClick={() => setOpen(true)}
         title="Antrean cetak"
-        className="relative flex size-10 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+        className="relative flex size-11 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
       >
         <Printer className="size-5" />
         {count > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-bold text-white">
             {count}
           </span>
         )}

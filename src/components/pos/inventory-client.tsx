@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertTriangle, PackagePlus, Trash2, Calculator, Plus, Power } from "lucide-react";
-import { adjustStock, recordPurchase, setIngredientActive, type IngredientView, type ReorderSuggestion, type PurchaseHistoryItem } from "@/lib/actions/inventory";
+import { AlertTriangle, PackagePlus, Trash2, Calculator, Plus, Power, Pencil, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { adjustStock, deleteIngredient, recordPurchase, setIngredientActive, updateIngredient, type IngredientView, type ReorderSuggestion, type PurchaseHistoryItem } from "@/lib/actions/inventory";
 import { createIngredient } from "@/lib/actions/ingredient-create";
 import { Numpad } from "@/components/ui/numpad";
 import { Modal } from "@/components/ui/modal";
@@ -29,7 +29,26 @@ export function InventoryClient({
 }) {
   const [mode, setMode] = useState<null | { kind: "adjustment" | "waste"; ingredient: IngredientView }>(null);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const [editFor, setEditFor] = useState<IngredientView | null>(null);
   const [, startToggle] = useTransition();
+
+  // Search + pagination tabel (66+ bahan).
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
+  const filtered = ingredients.filter((g) => g.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const removeIngredient = (ing: IngredientView) => {
+    if (!window.confirm(`Hapus permanen "${ing.name}"? Bahan yang pernah dipakai sebaiknya dinonaktifkan saja.`)) return;
+    startToggle(async () => {
+      const res = await deleteIngredient(ing.id);
+      if (res.ok) window.location.reload();
+      else toast.error(res.error ?? "Gagal hapus");
+    });
+  };
 
   const toggleActive = (ing: IngredientView) => {
     startToggle(async () => {
@@ -58,33 +77,29 @@ export function InventoryClient({
         </button>
       </div>
 
-      {suggestions.length > 0 && (
-        <section className="card border-amber-300 p-5 dark:border-amber-500/40">
-          <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
-            <AlertTriangle className="size-5 text-amber-500" /> Saran Reorder
-          </h2>
-          <ul className="space-y-2">
-            {suggestions.map((s) => (
-              <li key={s.ingredient_id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-500/10">
-                <div>
-                  <p className="font-semibold">
-                    {s.name} — sisa {s.stock_qty} {s.unit} (min {s.min_stock_qty})
-                  </p>
-                  <p className="text-xs text-stone-500">{s.reason}</p>
-                </div>
-                <span className="rounded-full bg-amber-500/20 px-3 py-1 font-bold text-amber-700 dark:text-amber-300">
-                  Pesan ± {s.suggested_qty} {s.unit}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {suggestions.length > 0 && <ReorderPanel suggestions={suggestions} />}
 
       <section className="card overflow-x-auto">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-100 p-3 dark:border-stone-800">
+          <div className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Cari bahan…"
+              className="w-full rounded-btn border border-stone-300 py-2.5 pl-9 pr-3 text-sm dark:border-stone-700 dark:bg-stone-800"
+            />
+          </div>
+          <p className="shrink-0 text-xs font-semibold text-stone-500 dark:text-stone-400">
+            {filtered.length} bahan
+          </p>
+        </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+            <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
               <th className="p-3">Bahan</th>
               <th className="p-3">Stok</th>
               <th className="p-3">Min</th>
@@ -94,20 +109,20 @@ export function InventoryClient({
             </tr>
           </thead>
           <tbody>
-            {ingredients.map((ing) => (
+            {pageRows.map((ing) => (
               <tr key={ing.id} className="border-b border-stone-100 dark:border-stone-800">
                 <td className={cn("p-3 font-semibold", !ing.active && "text-stone-400 line-through")}>
                   {ing.name}
                   {!ing.active && (
-                    <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 align-middle text-[10px] font-bold text-stone-500 dark:bg-stone-700 dark:text-stone-300">
+                    <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 align-middle text-xs font-bold text-stone-700 dark:bg-stone-600 dark:text-stone-100">
                       NONAKTIF
                     </span>
                   )}
-                  <span className="block text-xs font-normal text-stone-400">
+                  <span className="block text-xs font-normal text-stone-500 dark:text-stone-400">
                     {ing.unit}
                     {ing.purchase_unit && ing.purchase_unit !== ing.unit && (
-                      <span className="font-semibold text-brand-600 dark:text-brand-400">
-                        {" · beli: "}1 {ing.purchase_unit} = {ing.conversion_factor.toLocaleString("id-ID")} {ing.unit}
+                      <span className="font-semibold text-brand-700 dark:text-brand-300">
+                        {"\u00a0\u00b7 beli: "}1 {ing.purchase_unit} = {ing.conversion_factor.toLocaleString("id-ID")}{"\u00a0"}{ing.unit}
                       </span>
                     )}
                   </span>
@@ -115,9 +130,9 @@ export function InventoryClient({
                 <td className={cn("p-3 font-bold tabular-nums", ing.stock_qty <= ing.min_stock_qty && "text-red-500")}>
                   {ing.stock_qty.toLocaleString("id-ID")}
                   {ing.stock_qty <= 0 ? (
-                    <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 align-middle text-[10px] font-bold text-white">HABIS</span>
+                    <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 align-middle text-xs font-bold text-white">HABIS</span>
                   ) : ing.stock_qty <= ing.min_stock_qty ? (
-                    <span className="ml-2 rounded-full bg-amber-500 px-2 py-0.5 align-middle text-[10px] font-bold text-white">MENIPIS</span>
+                    <span className="ml-2 rounded-full bg-amber-600 px-2 py-0.5 align-middle text-xs font-bold text-white">MENIPIS</span>
                   ) : null}
                 </td>
                 <td className="p-3 tabular-nums text-stone-400">{ing.min_stock_qty.toLocaleString("id-ID")}</td>
@@ -133,8 +148,22 @@ export function InventoryClient({
                       <Calculator className="size-4" />
                     </button>
                     <button
+                      onClick={() => setEditFor(ing)}
+                      title="Edit bahan"
+                      className="touch-target rounded-lg border border-stone-300 p-2 dark:border-stone-700"
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button
                       onClick={() => setMode({ kind: "waste", ingredient: ing })}
                       title="Waste"
+                      className="touch-target rounded-lg border border-red-200 p-2 text-red-500 dark:border-red-500/30"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => removeIngredient(ing)}
+                      title="Hapus permanen"
                       className="touch-target rounded-lg border border-red-200 p-2 text-red-500 dark:border-red-500/30"
                     >
                       <Trash2 className="size-4" />
@@ -184,12 +213,47 @@ export function InventoryClient({
         <NewIngredientForm suppliers={suppliers} onDone={() => { setNewOpen(false); window.location.reload(); }} />
       </Modal>
 
+      <Modal open={!!editFor} onClose={() => setEditFor(null)} title={`Edit Bahan — ${editFor?.name ?? ""}`}>
+        {editFor && (
+          <EditIngredientForm
+            ingredient={editFor}
+            suppliers={suppliers}
+            onDone={() => {
+              setEditFor(null);
+              window.location.reload();
+            }}
+          />
+        )}
+      </Modal>
+
+      {pageCount > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={safePage <= 1}
+            className="flex h-11 items-center gap-1 rounded-btn border border-stone-300 px-4 text-sm font-semibold disabled:opacity-40 dark:border-stone-700"
+          >
+            <ChevronLeft className="size-4" /> Sebelumnya
+          </button>
+          <span className="text-sm font-semibold text-stone-500">
+            Halaman {safePage} / {pageCount}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            disabled={safePage >= pageCount}
+            className="flex h-11 items-center gap-1 rounded-btn border border-stone-300 px-4 text-sm font-semibold disabled:opacity-40 dark:border-stone-700"
+          >
+            Berikutnya <ChevronRight className="size-4" />
+          </button>
+        </div>
+      )}
+
       {recentPurchases.length > 0 && (
         <section className="card overflow-x-auto">
           <h2 className="p-4 pb-2 font-bold">Riwayat Pembelian Terakhir</h2>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-400 dark:border-stone-800">
+              <tr className="border-b border-stone-200 text-left text-xs uppercase text-stone-500 dark:text-stone-400 dark:border-stone-800">
                 <th className="p-3">Waktu</th>
                 <th className="p-3">Supplier</th>
                 <th className="p-3">No. Invoice / Keterangan</th>
@@ -223,6 +287,47 @@ export function InventoryClient({
         </section>
       )}
     </div>
+  );
+}
+
+/**
+ * Panel Saran Reorder — maksimal 5 item teratas (stok paling kritis),
+ * sisanya bisa dibuka lewat tombol expand.
+ */
+function ReorderPanel({ suggestions }: { suggestions: ReorderSuggestion[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? suggestions : suggestions.slice(0, 5);
+  const hidden = suggestions.length - shown.length;
+
+  return (
+    <section className="card border-amber-300 p-5 dark:border-amber-500/40">
+      <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
+        <AlertTriangle className="size-5 text-amber-500" /> Saran Reorder
+      </h2>
+      <ul className="space-y-2">
+        {shown.map((s) => (
+          <li key={s.ingredient_id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-500/10">
+            <div>
+              <p className="font-semibold">
+                {s.name} — sisa {s.stock_qty} {s.unit} (min {s.min_stock_qty})
+              </p>
+              <p className="text-xs text-stone-500">{s.reason}</p>
+            </div>
+            <span className="rounded-full bg-amber-500/20 px-3 py-1 font-bold text-amber-800 dark:text-amber-200">
+              Pesan ± {s.suggested_qty} {s.unit}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {hidden > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="mt-3 flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-amber-300 text-sm font-semibold text-amber-700 hover:bg-amber-50 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/10"
+        >
+          Tampilkan {hidden} saran lainnya
+        </button>
+      )}
+    </section>
   );
 }
 
@@ -409,6 +514,110 @@ function NewIngredientForm({
         className="touch-target h-12 w-full rounded-btn bg-brand-600 font-bold text-white disabled:opacity-40"
       >
         {pending ? "Menyimpan…" : "Simpan Bahan"}
+      </button>
+    </div>
+  );
+}
+
+function EditIngredientForm({
+  ingredient,
+  suppliers,
+  onDone,
+}: {
+  ingredient: IngredientView;
+  suppliers: SupplierLite[];
+  onDone: () => void;
+}) {
+  const [name, setName] = useState(ingredient.name);
+  const [unit, setUnit] = useState<string>(ingredient.unit);
+  const [purchaseUnit, setPurchaseUnit] = useState<string>(ingredient.purchase_unit ?? ingredient.unit);
+  const [fillPerBuy, setFillPerBuy] = useState(String(ingredient.conversion_factor));
+  const [minQty, setMinQty] = useState(String(ingredient.min_stock_qty));
+  const [supplierId, setSupplierId] = useState(ingredient.supplier_id ?? "");
+  const [pending, startTransition] = useTransition();
+
+  const factor = parseFloat(fillPerBuy.replace(",", ".")) || 0;
+  const cat = catForUnit(unit);
+
+  const submit = () => {
+    startTransition(async () => {
+      const res = await updateIngredient({
+        id: ingredient.id,
+        name: name.trim(),
+        unit,
+        purchase_unit: purchaseUnit,
+        conversion_factor: factor,
+        min_stock_qty: parseFloat(minQty.replace(",", ".")) || 0,
+        supplier_id: supplierId || null,
+      });
+      if (res.ok) {
+        toast.success("Perubahan tersimpan");
+        onDone();
+      } else toast.error(res.error ?? "Gagal");
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Nama bahan"
+        className="w-full rounded-btn border border-stone-300 px-4 py-3 font-semibold dark:border-stone-700 dark:bg-stone-800"
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-600 dark:text-stone-400">Satuan beli</label>
+          <select
+            value={purchaseUnit}
+            onChange={(e) => setPurchaseUnit(e.target.value)}
+            className="w-full rounded-btn border border-stone-300 px-3 py-2.5 dark:border-stone-700 dark:bg-stone-800"
+          >
+            {cat.buyUnits.map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-600 dark:text-stone-400">Satuan resep</label>
+          <select
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className="w-full rounded-btn border border-stone-300 px-3 py-2.5 dark:border-stone-700 dark:bg-stone-800"
+          >
+            {ALL_SELL_UNITS.map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <NumField
+        label={`Isi konversi — 1 ${purchaseUnit} berapa ${unit}?`}
+        value={fillPerBuy}
+        onChange={setFillPerBuy}
+        suffix={unit}
+        decimals
+      />
+      <NumField label="Minimal stok" value={minQty} onChange={setMinQty} suffix={unit} decimals />
+      <select
+        value={supplierId}
+        onChange={(e) => setSupplierId(e.target.value)}
+        className="w-full rounded-btn border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800"
+      >
+        <option value="">— Tanpa supplier —</option>
+        {suppliers.map((s) => (
+          <option key={s.id} value={s.id}>{s.name}</option>
+        ))}
+      </select>
+      <p className="text-xs text-stone-400">
+        Stok & HPP diubah lewat Stok Opname / Catat Pembelian (riwayat ledger tetap utuh).
+      </p>
+      <button
+        onClick={submit}
+        disabled={pending}
+        className="touch-target h-12 w-full rounded-btn bg-brand-600 font-bold text-white disabled:opacity-40"
+      >
+        {pending ? "Menyimpan…" : "Simpan Perubahan"}
       </button>
     </div>
   );

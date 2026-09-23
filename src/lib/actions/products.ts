@@ -227,6 +227,64 @@ export async function setProductActive(id: string, isActive: boolean): Promise<{
   }
 }
 
+// ---------- CRUD Kategori ----------
+
+export async function createCategory(name: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const clean = name.trim();
+    if (!clean) return { ok: false, error: "Nama kategori wajib diisi" };
+    const { error: dupErr, data: dup } = await admin
+      .from("categories")
+      .select("id")
+      .ilike("name", clean)
+      .limit(1);
+    if (dupErr) throw new Error(dupErr.message);
+    if (dup && dup.length > 0) return { ok: false, error: `Kategori "${clean}" sudah ada` };
+    const { error } = await admin.from("categories").insert({ name: clean, sort_order: 0 });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal tambah kategori" };
+  }
+}
+
+export async function updateCategory(id: string, name: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const clean = name.trim();
+    if (!clean) return { ok: false, error: "Nama kategori wajib diisi" };
+    const { error } = await admin.from("categories").update({ name: clean }).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal edit kategori" };
+  }
+}
+
+/** Hapus kategori; tolak bila masih ada produk di dalamnya (FK categories tanpa cascade). */
+export async function deleteCategory(id: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertRole(["owner", "manager"]);
+    const admin = createSupabaseAdminClient();
+    const { count, error: cntErr } = await admin
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("category_id", id);
+    if (cntErr) throw new Error(cntErr.message);
+    if ((count ?? 0) > 0) {
+      return { ok: false, error: `Masih ada ${count} produk di kategori ini — pindahkan dulu` };
+    }
+    const { error } = await admin.from("categories").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Gagal hapus kategori" };
+  }
+}
+
 /** Bahan tersedia untuk editor resep. */
 export async function listIngredientsForRecipe(): Promise<{ id: string; name: string; unit: string }[]> {
   const admin = createSupabaseAdminClient();

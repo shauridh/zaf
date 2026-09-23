@@ -54,7 +54,7 @@ export function OrdersClient({ preorders }: { preorders: PreorderListItem[] }) {
                         className="size-6 rounded-full bg-stone-200 object-cover dark:bg-stone-700"
                       />
                     ) : (
-                      <span className="flex size-6 items-center justify-center rounded-full bg-stone-200 text-[10px] dark:bg-stone-700">
+                      <span className="flex size-6 items-center justify-center rounded-full bg-stone-200 text-xs dark:bg-stone-700">
                         🍗
                       </span>
                     )}

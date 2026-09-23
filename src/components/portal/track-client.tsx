@@ -95,7 +95,7 @@ export function TrackClient({ orderId }: { orderId: string }) {
                   )}>
                     {i + 1}
                   </div>
-                  <span className={cn("mt-1 text-center text-[9px] leading-tight", i <= stepIndex ? "font-semibold text-stone-700 dark:text-stone-300" : "text-stone-400")}>
+                  <span className={cn("mt-1 text-center text-xs leading-tight", i <= stepIndex ? "font-semibold text-stone-700 dark:text-stone-300" : "text-stone-400")}>
                     {s.label}
                   </span>
                 </div>

@@ -82,10 +82,10 @@ export function PosSidebar({
                     href={item.href}
                     title={item.label}
                     className={cn(
-                      "flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-medium transition",
+                      "flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-medium transition",
                       active
-                        ? "bg-brand-500/15 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300"
-                        : "text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800",
+                        ? "bg-brand-500/15 text-brand-800 dark:bg-brand-500/20 dark:text-brand-200"
+                        : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800",
                     )}
                   >
                     <Icon className="size-5" />
@@ -98,12 +98,12 @@ export function PosSidebar({
         </nav>
         <div className="flex flex-col items-center gap-2 pt-2">
           <PrintQueueButton />
-          <span className="text-[10px] font-semibold text-stone-400">{name}</span>
+          <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">{name}</span>
           <form action={staffLogout}>
             <button
               type="submit"
               title="Keluar"
-              className="flex size-10 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+              className="flex size-11 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               <LogOut className="size-5" />
             </button>
@@ -134,9 +134,9 @@ export function PosSidebar({
           const Icon = ICONS[item.href] ?? ClipboardList;
           const active = pathname === item.href;
           return (
-            <Link key={item.href} href={item.href} className="flex flex-col items-center gap-0.5 px-3 py-2 text-[10px]">
+            <Link key={item.href} href={item.href} className="flex flex-col items-center gap-0.5 px-3 py-2 text-xs">
               <Icon className={cn("size-5", active ? "text-brand-600" : "text-stone-400")} />
-              <span className={active ? "font-semibold text-brand-700 dark:text-brand-300" : "text-stone-500"}>
+              <span className={active ? "font-semibold text-brand-700 dark:text-brand-300" : "text-stone-600 dark:text-stone-300"}>
                 {item.label.split(" ")[0]}
               </span>
             </Link>

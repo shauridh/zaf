@@ -80,7 +80,7 @@ export function StaffPanel() {
                   <p className="truncate font-semibold">
                     {m.name}
                     {m.role === "owner" && (
-                      <span className="ml-2 rounded-full bg-stone-800 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-stone-200 dark:text-stone-900">
+                      <span className="ml-2 rounded-full bg-stone-800 px-2 py-0.5 text-xs font-bold text-white dark:bg-stone-200 dark:text-stone-900">
                         OWNER
                       </span>
                     )}

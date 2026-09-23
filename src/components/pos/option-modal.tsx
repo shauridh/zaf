@@ -118,7 +118,7 @@ export function OptionModal({
             <p className="mb-2 text-sm font-bold">
               {g.name}
               {g.is_required || g.min_select > 0 ? (
-                <span className="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                <span className="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700 dark:bg-red-500/20 dark:text-red-300">
                   WAJIB
                 </span>
               ) : (
